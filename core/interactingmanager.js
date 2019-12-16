@@ -365,8 +365,13 @@ window.InteractingManager = ig.Class.extend({
                     for (var i = 0; i < placements.length; i++) {
                         var placement = placements[i].trim();
                         var params = placement.split(' ');
-                        if (params.length == 3) {
-                            var placementData = { itemId: params[0], offsetX: parseInt(params[1]), offsetY: parseInt(params[2]) };
+                        if (params.length == 4) {
+                            var placementData = {
+                                itemId: params[0],
+                                offsetX: parseInt(params[1]),
+                                offsetY: parseInt(params[2]),
+                                rotation: parseInt(params[3])
+                            };
                             if (!data.placements) { data.placements = []; }
                             data.placements.push(placementData);
                         }
@@ -457,7 +462,7 @@ window.InteractingManager = ig.Class.extend({
 
             var unplaceable = ['INTERMOT', 'MOTION', 'MIFT'];
             if ( unplaceable.indexOf(item.base) === -1 ) {
-                var mapPosDef = {tid: placement.itemId, rotation: 0, flip: 0};
+                var mapPosDef = {tid: placement.itemId, rotation: placement.rotation, flip: 0};
                 ig.game.mapManager.placeThingAt(mapPosDef, coords, true, true);
 
                 if (placesData.usesAudio &&
@@ -1296,11 +1301,25 @@ window.InteractingManager = ig.Class.extend({
                         }
 
                         if (params.length >= 3) {
-                            params = this.joinStringArrayIntoLimitedRightBound(params, 3);
-                            if (params && params.length == 3) {
+                            params = this.joinStringArrayIntoLimitedRightBound(params, 4);
+                            if (params && (params.length == 3 || params.length == 4)) {
                                 var itemParam = params[0].trim();
                                 var offsetX = params[1];
                                 var offsetY = params[2];
+                                var rotation = 0;
+                                if (params.length == 4) {
+                                    switch(params[3]) {
+                                        case '>':
+                                            rotation = 1;
+                                            break;
+                                        case 'v':
+                                            rotation = 2;
+                                            break;
+                                        case '<':
+                                            rotation = 3;
+                                            break;
+                                    }
+                                }
 
                                 if (itemParam == 'nothing') {
                                     if ( parseInt(offsetX) == offsetX && parseInt(offsetY) == offsetY &&
@@ -1308,7 +1327,7 @@ window.InteractingManager = ig.Class.extend({
                                             ) {
                                         if (!validParts) { validParts = []; }
                                         lastItemName = itemParam;
-                                        validParts.push( itemParam + ' ' + parseInt(offsetX) + ' ' + parseInt(offsetY) );
+                                        validParts.push( itemParam + ' ' + parseInt(offsetX) + ' ' + parseInt(offsetY) + ' ' + rotation );
                                     }
 
                                 }
@@ -1322,7 +1341,7 @@ window.InteractingManager = ig.Class.extend({
                                             if (!validParts) { validParts = []; }
                                             if (validParts.length < this.maxPlacements) {
                                                 lastItemName = itemParam;
-                                                validParts.push( idAndName[0] + ' ' + parseInt(offsetX) + ' ' + parseInt(offsetY) );
+                                                validParts.push( idAndName[0] + ' ' + parseInt(offsetX) + ' ' + parseInt(offsetY) + ' ' + rotation );
                                                 break;
                                             }
                                         }
